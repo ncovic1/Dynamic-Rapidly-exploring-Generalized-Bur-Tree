@@ -64,7 +64,7 @@ methods
             
             this.q_next = this.Q_h(:,1);
             [Q_h_reached, this.Q_h, this.Distance, N_h, ind_not_in_path] = this.GenerateGBur(this.Q_h, [], T1);            
-            [this.w_h, this.q_next, index_next, this.distance_max_mean] = this.GetProbabs(N_h, ind_not_in_path, Q_h_reached, zeros(1,N_h));  % Relativna vjerovatnoca izbora svakog cvora
+            [this.w_h, this.q_next, index_next, this.distance_max_mean] = this.GetWeights(N_h, ind_not_in_path, Q_h_reached, zeros(1,N_h));  % Relativna vjerovatnoca izbora svakog cvora
             index_prev = index_next;
             
             if k == size(rgbt.path,2) && ~prod(this.q_next == robot.q_goal)
@@ -120,7 +120,7 @@ methods
                 end
                 delta_dist = distance_new - this.Distance;   % Change of Distance
                 this.Distance = distance_new;  
-                [this.w_h, this.q_next, index_next, this.distance_max_mean] = this.GetProbabs(N_h, ind_not_in_path, Q_h_reached, delta_dist, index_prev);                  
+                [this.w_h, this.q_next, index_next, this.distance_max_mean] = this.GetWeights(N_h, ind_not_in_path, Q_h_reached, delta_dist, index_prev);                  
                 index_prev = index_next;       
                 
                 if max(this.w_h) < 0.5 && mean(this.w_h) < 0.5 || replanning  % Condition for replanning
@@ -294,7 +294,7 @@ methods
     end
     
     
-    function [w_h, q_next, index_next, distance_max_mean] = GetProbabs(this, N_h, ind_not_in_path, Q_h_reached, delta_dist, index_prev)
+    function [w_h, q_next, index_next, distance_max_mean] = GetWeights(this, N_h, ind_not_in_path, Q_h_reached, delta_dist, index_prev)
         global robot;
         
         distance_max_mean = ((this.N_iter-1)*this.distance_max_mean + max(this.Distance))/this.N_iter;
