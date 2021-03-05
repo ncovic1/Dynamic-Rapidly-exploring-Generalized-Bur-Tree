@@ -6,7 +6,7 @@ set(groot, 'defaultLegendInterpreter','latex');
 global robot obstacles;
 
 Initialization;
-DrawInitAndGoalConfig(robot);
+DrawInitAndGoalConfig(robot);   % The library 'geom3d' must be included. You can find it at https://github.com/mattools/matGeom
 % [~, ~] = DrawObstacles(obstacles, robot, 0.08);
 
 % ALG = RRT(); ALG = ALG.Run();
