@@ -14,10 +14,9 @@ function collision = CollisionLineSegToLineSeg(A, B, C, D)
         if robot.dim == 2
             collision = true;
         else
-            S_opt = A + t*(B-A);
-            D_opt = C + s*(D-C);
-            distance = norm(S_opt-D_opt);
-            if distance < 1e-6
+            P1 = C + s*(D-C);
+            P2 = A + t*(B-A);
+            if norm(P2-P1) < 1e-6
                 collision = true;
             end
         end
