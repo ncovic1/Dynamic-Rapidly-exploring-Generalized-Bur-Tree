@@ -14,7 +14,7 @@ function InitRobot_21()
         0 1 0
         0 1 0];             
     robot.offsets = [0; 0]; % Offset of angle theta
-    robot.range = [-pi, pi; -pi, pi];   % Range for each segment
+    robot.range = [-pi, pi; -pi, pi];   % Range/limit for each joint
     robot.radii = [0; 0];   % Radii of all enclosing cylinder  
     robot.weights = [2; 1]; % Weights in criterial function for optimal planning
 end
@@ -96,14 +96,14 @@ function InitObs_2112()
 end
 
 function InitObs_2113()
-    obstacles.loc = [1.5 0.7 0 0.4; 1.5 -0.7 0 0.4; -0.6 1.5 0 0.4; -0.6 -1.5 0 0.4]';
+    obstacles.loc = [1.5 0.7 0 0.4; 1.5 -0.7 0 0.4; -1.5 -0.7 0 0.4; -1.5 0.7 0 0.4]';
     robot.q_init = [-2;-2.5]; 
     robot.q_goal = [2; 2.5];
 end
 
 function InitObs_2114()
-    obstacles.loc = [1.5 0.7 0 0.4; 1.5 -0.7 0 0.4; -1.5 -0.7 0 0.4; -1.5 0.7 0 0.4; 0.6 1.5 0 0.4; 
-        -0.6 1.5 0 0.4; 0.6 -1.5 0 0.4;  -0.6 -1.5 0 0.4]';
+    obstacles.loc = [1.5 0.7 0 0.4; 1.5 -0.7 0 0.4; -1.5 -0.7 0 0.4; -1.5 0.7 0 0.4;  
+                     0.6 1.5 0 0.4; 0.6 -1.5 0 0.4; -0.6 1.5 0 0.4;  -0.6 -1.5 0 0.4]';
     robot.q_init = [-2;-2.5]; 
     robot.q_goal = [2; 2.5];
 end
@@ -140,7 +140,7 @@ function InitObs_2122()
 end
 
 function InitObs_2123()
-    obstacles.loc = [1.5 1 0 2 1.5 0; 1.5 -1.5 0 2 -1 0; -2 1 0 -1.5 1.5 0; -2 -1.5 0 -1.5 -1 0]';
+    obstacles.loc = [1 0.5 0 1.5 1 0; 1 -1 0 1.5 -0.5 0; -1.5 0.5 0 -1 1 0; -1.5 -1 0 -1 -0.5 0]';
     robot.q_init = [-2;-2.5]; 
     robot.q_goal = [2; 2.5];
 end

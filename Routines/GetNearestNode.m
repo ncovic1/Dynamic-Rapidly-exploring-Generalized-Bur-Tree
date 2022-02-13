@@ -4,7 +4,7 @@ function [q_near, q_near_p] = GetNearestNode(nodes, q)
     for i = 1:size(nodes,2)
         q_temp = nodes(:,i);
         is_out = false;
-        for k = 1:length(q_temp)
+        for k = 1:length(q)
             if abs(q_temp(k)-q(k)) > d_min    % Is outside the box?
                 is_out = true;
                 break;

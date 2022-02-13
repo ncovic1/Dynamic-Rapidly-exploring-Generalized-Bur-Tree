@@ -1,8 +1,8 @@
-function [collision, distance, D_opt, S_opt] = DistanceLineSegToLineSeg(A, B, C, D)
-    global robot d_c_temp D_temp S_temp;
+function [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, C, D)
+    global robot;
     
     collision = false;
-    distance = inf;    
+    d_c = inf;    
     alpha1 = (B-A)'*(B-A);
     alpha2 = (B-A)'*(D-C);
     beta1 = (C-D)'*(B-A);
@@ -14,62 +14,56 @@ function [collision, distance, D_opt, S_opt] = DistanceLineSegToLineSeg(A, B, C,
     if t >= 0 && t <= 1 && s >= 0 && s <= 1
         if robot.dim == 2
             collision = true;
-            distance = 0;
-            S_opt = zeros(3,1);
-            D_opt = zeros(3,1); 
+            d_c = 0;
+            P1 = zeros(3,1); 
+            P2 = zeros(3,1);
         else
-            S_opt = A + t*(B-A);
-            D_opt = C + s*(D-C);
-            distance = norm(S_opt-D_opt);
-            if distance < 1e-6
+            P1 = C + s*(D-C);
+            P2 = A + t*(B-A);
+            d_c = norm(P2-P1);
+            if d_c < 1e-6
                 collision = true;
             end
         end
+        plane = [P1; P2-P1]; 
     else    
         var1 = 1/((B-A)'*(B-A));
         var2 = 1/((C-D)'*(C-D));
-        ConsiderCases(1, (A-C)'*(A-B)*var1);  % s = 0
-        ConsiderCases(2, (A-D)'*(A-B)*var1);  % s = 1
-        ConsiderCases(3, (A-C)'*(D-C)*var2);  % t = 0
-        ConsiderCases(4, (B-C)'*(D-C)*var2);  % t = 1
-    end
-    
-    function ConsiderCases(Case, opt)
-        % Case = [1,2,3,4] = [s=0, s=1, t=0, t=1]
-        
-        if opt <= 0
-            if Case == 1 || Case == 3       % s = 0, t = 0
-                D_temp = C; S_temp = A;
-            elseif Case == 2                % s = 1, t = 0
-                D_temp = D; S_temp = A;
-            else                            % t = 1, s = 0
-                D_temp = C; S_temp = B;
+        opt = [(A-C)'*(A-B)*var1, (A-D)'*(A-B)*var1, (A-C)'*(D-C)*var2, (B-C)'*(D-C)*var2];  % [s=0, s=1, t=0, t=1]
+        for i = 1:4
+            if opt(i) <= 0
+                if i == 1 || i == 3         % s = 0, t = 0
+                    P1 = C; P2 = A;
+                elseif i == 2           	% s = 1, t = 0
+                    P1 = D; P2 = A;
+                else                      	% t = 1, s = 0
+                    P1 = C; P2 = B;
+                end
+            elseif opt(i) >= 1                             
+                if i == 2 || i == 4         % s = 1, t = 1
+                    P1 = D; P2 = B;
+                elseif i == 1             	% s = 0, t = 1
+                    P1 = C; P2 = B;
+                else                      	% t = 0, s = 1
+                    P1 = D; P2 = A;
+                end
+            else
+                if i == 1                	% s = 0, t € [0,1]
+                    P1 = C; P2 = A+opt(i)*(B-A);
+                elseif i == 2              	% s = 1, t € [0,1]
+                    P1 = D; P2 = A+opt(i)*(B-A);
+                elseif i == 3              	% t = 0, s € [0,1]
+                    P1 = C+opt(i)*(D-C); P2 = A;
+                else                       	% t = 1, s € [0,1]
+                    P1 = C+opt(i)*(D-C); P2 = B;                              
+                end
             end
-        elseif opt >= 1                             
-            if Case == 2 || Case == 4       % s = 1, t = 1
-                D_temp = D; S_temp = B;
-            elseif Case == 1                % s = 0, t = 1
-                D_temp = C; S_temp = B;
-            else                            % t = 0, s = 1
-                D_temp = D; S_temp = A;
-            end
-        else
-            if Case == 1                    % s = 0, t € [0,1]
-                D_temp = C; S_temp = A+opt*(B-A);
-            elseif Case == 2                % s = 1, t € [0,1]
-                D_temp = D; S_temp = A+opt*(B-A);
-            elseif Case == 3                % t = 0, s € [0,1]
-                D_temp = C+opt*(D-C); S_temp = A;
-            else                            % t = 1, s € [0,1]
-                D_temp = C+opt*(D-C); S_temp = B;                              
+            
+            d_c_temp = norm(P1-P2);
+            if d_c_temp < d_c
+                d_c = d_c_temp;
+                plane = [P1; P2-P1];
             end
         end
-        
-        d_c_temp = norm(D_temp-S_temp);
-        if d_c_temp < distance
-            D_opt = D_temp; S_opt = S_temp;
-            distance = d_c_temp;
-        end
     end
-
 end

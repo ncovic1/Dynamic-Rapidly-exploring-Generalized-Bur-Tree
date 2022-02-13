@@ -1,4 +1,4 @@
-function [] = DrawDetails(path, eps)
+function [] = DrawDetails(path, eps, animate)
     global robot tree;
     path_mod = [];
     k = 1;
@@ -7,9 +7,13 @@ function [] = DrawDetails(path, eps)
         q2 = path(:,i+1);
         j = 0;
         D = norm(q2-q1);
-        while true            
-            path_mod(:,k) = q1 + j*eps*(q2-q1)/D;
-            if norm(q2-path_mod(:,k)) <= eps
+        while true
+            if D > 0
+                path_mod(:,k) = q1 + j*eps*(q2-q1)/D;
+            else
+                path_mod(:,k) = q1;
+            end
+            if norm(q2-path_mod(:,k)) <= 1.5*eps
                 path_mod(:,k+1) = q2;
                 k = k+1;
                 break;
@@ -18,16 +22,6 @@ function [] = DrawDetails(path, eps)
             j = j+1;
         end        
     end
-    
-    if robot.dim == 2
-        for i = 1:size(path_mod,2)
-            DrawRobot(path_mod(:,i), [0.7,0.7,0.7], 0.2, 1, 1);
-        end
-    else
-        for i = 1:size(path_mod,2)
-            DrawRobot(path_mod(:,i), [0.7,0.7,0.7], 0.2);
-        end
-    end        
     
     if robot.N_DOF == 2
         if ~iscell(tree.nodes)
@@ -57,11 +51,24 @@ function [] = DrawDetails(path, eps)
             end
         end   
         
-        for i = 1:size(path_mod,2)  
-            if i < size(path_mod,2) 
-                q1 = path_mod(:,i);
-                q2 = path_mod(:,i+1);
-                plot([q1(1),q2(1)],[q1(2),q2(2)],'Color',[0.7,0.7,0.7],'LineWidth',4); hold on;
+        if robot.dim == 2
+            for i = 1:size(path_mod,2)
+                if i < size(path_mod,2) 
+                    q1 = path_mod(:,i);
+                    q2 = path_mod(:,i+1);
+                    plot([q1(1),q2(1)],[q1(2),q2(2)],'Color',[0.7,0.7,0.7],'LineWidth',4); hold on;
+                end
+                DrawRobot(q1, [0.7,0.7,0.7], 0.2, 1, 1); 
+                if animate
+                    drawnow; % pause(0.1);
+                end
+            end
+        else
+            for i = 1:size(path_mod,2)
+                DrawRobot(path_mod(:,i), [0.7,0.7,0.7], 0.2);
+                if animate
+                    drawnow; % pause(0.1);
+                end
             end
         end
     end

@@ -1,4 +1,4 @@
-function [collision, distance, plane] = DistanceLineSegToCuboid_v2(A, B, obstacle)
+function [collision, d_c, plane] = DistanceLineSegToCuboid_v2(A, B, obstacle)
     collision = false;
     plane = zeros(6,1);
     
@@ -14,13 +14,13 @@ function [collision, distance, plane] = DistanceLineSegToCuboid_v2(A, B, obstacl
 %     [x_min, f_min] = quadprog(H, f, [], [], [], [], LB, UB, [], options);
     x_min = qps_mq(H, f, LB, UB);
     f_min = 0.5*x_min'*H*x_min + f'*x_min;
-    distance = sqrt(f_min+norm(A)^2);
-    if distance < 1e-6
+    d_c = sqrt(f_min+norm(A)^2);
+    if d_c < 1e-6
         collision = true;
         return;
     end
 
-    D_opt = x_min(1:3);
-    S_opt = A+n*x_min(4);
-    plane = [D_opt; S_opt-D_opt];
+    P1 = x_min(1:3);
+    P2 = A+n*x_min(4);
+    plane = [P1; P2-P1];
 end
