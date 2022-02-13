@@ -6,9 +6,9 @@ properties
     d_crit = 0.01;          % Critical distance in W-space when RBT becomes RRT
     delta = pi;             % Radius of hypersphere from q to q_e
     path = [];              % Traversed path (sequence of nodes from q_init to q_goal)
-    N_nodes = 2;            % Number of considered nodes in trees
     N_iter = 0;             % Iteration counter
     T_alg = 0;              % Total algorithm runtime
+    T_max = 1;              % Maximal algorithm runtime in [s]
 end
 
 methods
@@ -29,61 +29,54 @@ methods
         tree.nodes = {robot.q_init, robot.q_goal};  % Consisting of two parts, one from q_init and another from q_goal
         tree.pointers = {{0}, {0}};     % Pointing to location of parent/children in trees
         tree.distances = {NaN, NaN};    % Distance to each obstacle for each node
-        
         this.T_alg = tic;
-        tree.distances{1}(1) = this.Get_dc(1, 1);
-        if tree.distances{1}(1) == 0
+        
+        if CheckCollision(robot.q_init)
             disp('Initial robot configuration is in the collision!');
             return;
-        end
-        tree.distances{2}(1) = this.Get_dc(2, 1);
-        if tree.distances{2}(1) == 0
+        end        
+        if CheckCollision(robot.q_goal)
             disp('Goal robot configuration is in the collision!');
             return;
         end          
         
         while true        
-            % Generating bur
+            %% Generating bur
             TN = 3 - TN;
-            q_e = 2*pi*rand(robot.N_DOF,1)-pi;  % Adding random node in C-space
+            q_e = this.GetRandomNode();
             [q_near, q_near_p] = GetNearestNode(tree.nodes{TN}, q_e);
             d_c = this.Get_dc(TN, q_near_p);
-            if d_c < this.d_crit     % Distance to obstacle is less than d_crit
+            if d_c > this.d_crit
+                for i = 1:this.N_spines
+                    q_e = q_near + this.GetRandomNode();
+                    q_e = this.SaturateSpine(q_near, q_e, this.delta);
+                    q_e = this.PruneSpine(q_near, q_e);
+                    [q_new, ~] = this.GenerateSpine(q_near, q_e, d_c);
+                    q_new_p = UpgradeTree(TN, q_near_p, q_new, NaN);
+                end
+            else    % Distance to obstacle is less than d_crit
                 [q_new, ~, collision] = this.GenerateEdge(q_near, q_e);     % Spine is generated using RRT                
                 if ~collision
                     q_new_p = UpgradeTree(TN, q_near_p, q_new, NaN);
-                    this.N_nodes = this.N_nodes + 1;
                 else
                     q_new_p = q_near_p;
                 end 
-            else
-                for i = 1:this.N_spines
-                    q_new = q_near;
-                    q_temp_p = q_near_p;
-                    q_e = q_new + 2*pi*rand(robot.N_DOF,1) - pi;
-                    q_e = this.SaturateSpine(q_new, q_e, this.delta);
-                    q_e = this.PruneSpine(q_new, q_e);
-                    [q_new, ~] = this.GenerateSpine(q_new, q_e, d_c);
-                    q_new_p = UpgradeTree(TN, q_temp_p, q_new, NaN);
-                    this.N_nodes = this.N_nodes + 1;
-                end
             end
             
-            % Bur-Connect
+            %% Bur-Connect
             TN = 3 - TN;
             [q_near, q_near_p] = GetNearestNode(tree.nodes{TN}, q_new);
             collision = false;  % Is collision occured
             reached = false;    % If trees are connected
             while ~collision && ~reached 
                 d_c = this.Get_dc(TN, q_near_p);
-                if d_c < this.d_crit
-                    [q_near, reached, collision] = this.GenerateEdge(q_near, q_new);     % Spine is generated using RRT                 
+                if d_c > this.d_crit
+                    [q_near, reached] = this.GenerateSpine(q_near, q_new, d_c);     % Spine is generated using RBT              
                 else
-                    [q_near, reached] = this.GenerateSpine(q_near, q_new, d_c);     % Spine is generated using RBT
+                    [q_near, reached, collision] = this.GenerateEdge(q_near, q_new);     % Spine is generated using RRT   
                 end
                 if ~collision
                     q_near_p = UpgradeTree(TN, q_near_p, q_near, NaN);
-                    this.N_nodes = this.N_nodes + 1; 
                 end 
             end
             
@@ -91,15 +84,23 @@ methods
             if reached
                 this.path = GetPath(q_near_p, q_new_p, TN);
                 this.T_alg = toc(this.T_alg);
-                disp(['Path is found in ', num2str(this.T_alg), ' [s].']);
+                disp(['The path is found in ', num2str(this.T_alg*1000), ' [ms].']);
                 return;
-            elseif this.N_nodes >= this.N_max
+            elseif size(tree.nodes{1},2)+size(tree.nodes{2},2) >= this.N_max
                 this.T_alg = toc(this.T_alg);
-                disp('Path is not found.');
+                disp('The path is not found.');
                 return;
             end
             TN = 3 - TN;
         end
+    end
+    
+    
+    function q_e = GetRandomNode(~)
+        % Adding a random node with uniform distribution in C-space
+        global robot;
+        
+        q_e = (robot.range(:,2)-robot.range(:,1)).*rand(robot.N_DOF,1) + robot.range(:,1);
     end
     
     
@@ -154,12 +155,12 @@ methods
         
         reached = false;
         [xyz_q, ~] = DirectKinematics(robot, q);
+        xyz_q_new = xyz_q;
         rho = 0;    % Path length in W-space
         K_max = 5;  % Number of iterations for computing q*
         k = 1;
         while true                 
-            fi = d_c - rho;    % Remaining path length in W-space
-            step = ComputeStep(q_new, q_e, fi); 
+            step = ComputeStep(q_new, q_e, d_c-rho, xyz_q_new);   % 'd_c-rho' is the remaining path length in W-space
             if step > 1
                 q_new = q_e;
                 reached = true;
@@ -178,8 +179,7 @@ methods
             k = k + 1;
         end  
         
-        function step = ComputeStep(q, q_e, fi)
-            [xyz, ~] = DirectKinematics(robot, q);        
+        function step = ComputeStep(q, q_e, fi, xyz)    
             if robot.dim == 2   % assumes that N_links = N_DOF
                 d = 0;
                 for ii = 1:robot.N_links
@@ -233,11 +233,11 @@ methods
     
     function q_e = PruneSpine(~, q, q_e)
         % Prune spine from q to q_e, if it comes out C-space domain
+        global robot;
 
-        N_DOF = length(q);
-        bounds = zeros(N_DOF,1);
+        bounds = zeros(robot.N_DOF,1);
         indices = [];
-        for k = 1:N_DOF
+        for k = 1:robot.N_DOF
             if q_e(k) > pi
                 bounds(k) = pi;
                 indices =  [indices, k];
@@ -253,7 +253,7 @@ methods
             for k = indices
                 t = (bounds(k)-q(k))/(q_e(k)-q(k));
                 q_temp = q + t*(q_e-q);
-                if q_temp >= -pi*ones(N_DOF,1) & q_temp <= pi*ones(N_DOF,1)
+                if q_temp >= -pi*ones(robot.N_DOF,1) & q_temp <= pi*ones(robot.N_DOF,1)
                     q_e = q_temp;
                     break;
                 end
@@ -263,7 +263,7 @@ methods
     
     
     function d_c = Get_dc(~, TN, q_p)
-        % Get minimal distance from q (determined with q_p) to obstacles, and corresponding planes
+        % Get minimal distance from q (determined with q_p) to obstacles
         % TN - tree number
         % q_p - pointer at node q
         global tree;

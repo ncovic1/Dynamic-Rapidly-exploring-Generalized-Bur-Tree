@@ -180,8 +180,7 @@ end
 
 function rand_point = randomNode()
     global robot;
-    
-    rand_point = 2*pi*rand(1,robot.N_DOF) - pi;
+    rand_point = ((robot.range(:,2)-robot.range(:,1)).*rand(robot.N_DOF,1) + robot.range(:,1))';  % Adding random node in C-space
 end
 
 

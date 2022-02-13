@@ -23,24 +23,22 @@ methods
         TN = 1; % Tree number is always 1 for RRT
         tree.nodes = {robot.q_init};  % List of nodes in tree. E.g. [q1,q11,q12,q121,q13,q122,q14,q123,q1231,q1232]
         tree.pointers = {{0}};        % Pointing to location of parent/children in trees. First column is parent and others are children. E.g. {[0,2,3,5,7],[1],[1,4,6,8],[3],[1],[3],[1],[3,9,10],[8],[8]}
-        
         this.T_alg = tic;
-        collision = CheckCollision(robot.q_init);
-        if collision
+        
+        if CheckCollision(robot.q_init)
             disp('Initial robot configuration is in the collision!');
             return;
         end        
-        collision = CheckCollision(robot.q_goal);
-        if collision
+        if CheckCollision(robot.q_goal)
             disp('Goal robot configuration is in the collision!');
             return;
-        end 
+        end
     
         while true
             if rand < this.p
                 q_rand = robot.q_goal;
             else
-                q_rand = 2*pi*rand(robot.N_DOF,1)-pi;  % Adding random node in C-space
+                q_rand = this.GetRandomNode();
             end
             [q_near, q_near_p] = GetNearestNode(tree.nodes{TN}, q_rand);
             [q_new, ~, collision] = this.GenerateEdge(q_near, q_rand);
@@ -48,18 +46,27 @@ methods
                 q_new_p = UpgradeTree(TN, q_near_p, q_new);
                 this.N_nodes = this.N_nodes + 1;
                 if q_new == robot.q_goal
-                    this.path = GetPath(q_new_p);    
+                    this.path = ComputePath(1, q_new_p);
+                    this.path = this.path(:,end:-1:1);
                     this.T_alg = toc(this.T_alg); 
-                    disp(['Path is found in ', num2str(this.T_alg), ' [s].']);
+                    disp(['The path is found in ', num2str(this.T_alg), ' [s].']);
                     return;
                 end
             end
             if this.N_nodes >= this.N_max
                 this.T_alg = toc(this.T_alg);
-                disp('Path is not found.');
+                disp('The path is not found.');
                 return;
             end
         end
+    end
+    
+    
+    function q_e = GetRandomNode(~)
+        % Adding a random node with uniform distribution in C-space
+        global robot;
+        
+        q_e = (robot.range(:,2)-robot.range(:,1)).*rand(robot.N_DOF,1) + robot.range(:,1);
     end
     
     

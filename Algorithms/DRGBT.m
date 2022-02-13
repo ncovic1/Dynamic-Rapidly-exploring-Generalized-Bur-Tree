@@ -254,12 +254,12 @@ methods
         while i < horizon.N_h
             i = i + 1; 
             [q_new, reached] = this.GenerateSpine(horizon.q_curr, nodes_good(:,i), d_c);
-            d_c_new = this.Update_d_c(q_new, planes); 
+            d_c_new = this.GetUnderestimation_dc(q_new, planes); 
                  
             if d_c_new < this.d_crit && ~prod(q_new == robot.q_goal)    % Underestimation to obstacle is less than critical
                 nodes_good(:,i) = this.GetRandomNodes(1, q_new, false);    % q_e is added instead of nodes_good(:,i), which is "bad"
                 [q_new, reached] = this.GenerateSpine(horizon.q_curr, nodes_good(:,i), d_c);
-                d_c_new = this.Update_d_c(q_new, planes); 
+                d_c_new = this.GetUnderestimation_dc(q_new, planes); 
                 horizon.missing_ind(end+1) = i;
             end
             
@@ -268,7 +268,7 @@ methods
                     break;
                 end
                 [q_new, reached] = this.GenerateSpine(q_new, nodes_good(:,i), d_c_new); 
-                d_c_new = this.Update_d_c(q_new, planes);
+                d_c_new = this.GetUnderestimation_dc(q_new, planes);
             end
             horizon.distances(i) = d_c_new;  
             horizon.nodes_reached(:,i) = q_new; 
@@ -293,8 +293,11 @@ methods
         global robot horizon;
         
         % Adding random nodes
-        Q_e = repmat(horizon.q_curr,1,N) + 2*pi*rand(robot.N_DOF,N)-pi;
-
+        Q_e = zeros(robot.N_DOF, N);
+        for i = 1:N
+            Q_e(:,i) = horizon.q_curr + (robot.range(:,2)-robot.range(:,1)).*rand(robot.N_DOF,1) + robot.range(:,1);
+        end
+        
         if nargin == 3  % Adding lateral spines
             if robot.N_DOF == 2   % In 2D C-space only two possible spines exist
                 Q_e = [horizon.q_curr(1), horizon.q_curr(1); horizon.q_curr(2)-1, horizon.q_curr(2)+1];
