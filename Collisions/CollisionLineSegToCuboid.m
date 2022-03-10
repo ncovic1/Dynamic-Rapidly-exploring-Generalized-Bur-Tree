@@ -1,9 +1,9 @@
 function collision = CollisionLineSegToCuboid(A, B, obstacle, radius)
     collision = false;
     obs = [obstacle(1:3)-radius; obstacle(4:6)+radius];
-    radius_new = radius*sqrt(3)/3;
+    radius_new = radius*sqrt(2)/2;
     if prod(A >= obstacle(1:3)-radius_new & A <= obstacle(4:6)+radius_new) || ...
-            prod(B >= obstacle(1:3)-radius_new & B <= obstacle(4:6)+radius_new)   % 0.7071 = sqsrt(2)/2
+            prod(B >= obstacle(1:3)-radius_new & B <= obstacle(4:6)+radius_new)   % 0.7071 = sqrt(2)/2
         collision = true;
         return;
     elseif A(1) < obs(1) && B(1) < obs(1) || A(1) > obs(4) && B(1) > obs(4) || ...
