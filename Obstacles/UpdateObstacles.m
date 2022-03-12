@@ -156,6 +156,10 @@ function Obstacles_2123()
     end
 end
 
+function Obstacles_2124()
+    
+end
+
 function Obstacles_2221()
     global pp1 pp2;
     

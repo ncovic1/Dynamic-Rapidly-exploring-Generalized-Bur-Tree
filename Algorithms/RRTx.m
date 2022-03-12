@@ -9,7 +9,7 @@ robot.q_goal = robot.q_goal';
 eps = eps_;
 delta = 0.001;
 N_max = N_max_;   %N_max = {1500, 2500, 3500}
-draw = 0;
+draw = 1;
 
 node_pos = NaN(N_max,robot.N_DOF);
 parent = NaN(N_max,1);

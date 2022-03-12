@@ -50,25 +50,25 @@ function [] = DrawDetails(path, eps, animate)
                 plot(q1(1),q1(2),color{2},'MarkerSize',3.5); hold on;
             end
         end   
-        
-        if robot.dim == 2
-            for i = 1:size(path_mod,2)
-                if i < size(path_mod,2) 
-                    q1 = path_mod(:,i);
-                    q2 = path_mod(:,i+1);
-                    plot([q1(1),q2(1)],[q1(2),q2(2)],'Color',[0.7,0.7,0.7],'LineWidth',4); hold on;
-                end
-                DrawRobot(q1, [0.7,0.7,0.7], 0.2, 1, 1); 
-                if animate
-                    drawnow; % pause(0.1);
-                end
+    end
+    
+    if robot.dim == 2
+        for i = 1:size(path_mod,2)
+            if i < size(path_mod,2) 
+                q1 = path_mod(:,i);
+                q2 = path_mod(:,i+1);
+                plot([q1(1),q2(1)],[q1(2),q2(2)],'Color',[0.7,0.7,0.7],'LineWidth',3); hold on;
             end
-        else
-            for i = 1:size(path_mod,2)
-                DrawRobot(path_mod(:,i), [0.7,0.7,0.7], 0.2);
-                if animate
-                    drawnow; % pause(0.1);
-                end
+            DrawRobot(q1, [0.7,0.7,0.7], 0.2, 1, 1); 
+            if animate
+                drawnow; % pause(0.1);
+            end
+        end
+    else
+        for i = 1:size(path_mod,2)
+            DrawRobot(path_mod(:,i), [0.7,0.7,0.7], 0.2);
+            if animate
+                drawnow; % pause(0.1);
             end
         end
     end

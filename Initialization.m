@@ -145,6 +145,38 @@ function InitObs_2123()
     robot.q_goal = [2; 2.5];
 end
 
+function InitObs_2124()
+    obstacles.loc = [];
+    dim= [0.5, 0.5, 0];
+    trans= [1.5, 0.7, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.5, 0.5, 0];
+    trans= [1.5, -0.7, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];      
+    dim= [0.5, 0.5, 0];
+    trans= [-1.5, -0.7, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.5, 0.5, 0];
+    trans= [-1.5, 0.7, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.5, 0.5, 0];
+    trans= [0.6, 1.5, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.5, 0.5, 0];
+    trans= [0.6, -1.5, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.5, 0.5, 0];
+    trans= [-0.6, 1.5, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.5, 0.5, 0];
+    trans= [-0.6, -1.5, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+      
+    robot.q_init = [-2; -2.5]; 
+    robot.q_goal = [2; 2.5];
+    
+end
+
 function InitObs_2221()
     obstacles.loc = [-1.2 0.5 0 -0.8 2 0; -1.2 -2 0 -0.8 -0.5 0; -2.5 1.5 0 -1.2 2 0; 
         -2.5 -2 0 -1.2 -1.5 0; -4 -2 0 -2.5 2 0]';   % [x_min y_min z_min x_max y_max z_max]
@@ -249,10 +281,37 @@ function InitObs_3224()
 end
 
 function InitObs_3225()
-    obstacles.loc = [-0.35 0.5 0, -0.25 1 0.7; 0.25 0.5 0, 0.35 1 0.7; -0.25 0.5 0.6, 0.25 1 0.7; -0.25 0.5 0, 0.25 1 0.1;
-        -0.35 -1 0, -0.25 -0.6 0.7; 0.25 -1 0, 0.35 -0.6 0.7; -0.25 -1 0.6, 0.25 -0.6 0.7; -0.25 -1 0, 0.25 -0.6 0.1]';
+%     obstacles.loc = [-0.35 0.5 0, -0.25 1 0.7; 0.25 0.5 0, 0.35 1 0.7; -0.25 0.5 0.6, 0.25 1 0.7; -0.25 0.5 0, 0.25 1 0.1;
+%         -0.35 -1 0, -0.25 -0.6 0.7; 0.25 -1 0, 0.35 -0.6 0.7; -0.25 -1 0.6, 0.25 -0.6 0.7; -0.25 -1 0, 0.25 -0.6 0.1]';
     robot.q_init = [pi/2; pi/2-0.1859; pi+0.1859; pi/2; 0; 0]; 
     robot.q_goal = [-pi/2; pi/2-0.1859; pi+0.1859; pi/2; 0; 0];  
+    
+    obstacles.loc = [];
+    dim= [0.1, 0.5, 0.7];
+    trans= [-0.3, 0.75, 0.35];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.1, 0.5, 0.7];
+    trans= [0.3, 0.75, 0.35];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];      
+    dim= [0.5, 0.5, 0.1];
+    trans= [0, 0.75, 0.65];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.5, 0.5, 0.1];
+    trans= [0, 0.75, 0.05];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.1, 0.4, 0.7];
+    trans= [-0.3, -0.8, 0.35];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.1, 0.4, 0.7];
+    trans= [0.3, -0.8, 0.35];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.5, 0.4, 0.1];
+    trans= [0, -0.8, 0.65];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.5, 0.4, 0.1];
+    trans= [0, -0.8, 0.05];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
 end
+
 
 end

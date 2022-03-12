@@ -143,7 +143,7 @@ methods
                 if this.cost_opt < inf     % Both main trees are connected
                     this.path = GetPath(q_con1_p, q_con2_p, TN_main);
                     this.T_alg = toc(this.T_alg);
-                    disp(['The path is found in ', num2str(this.T_alg), ' [s].']);
+                    disp(['The path is found in ', num2str(this.T_alg), ' [s] with the cost of ', num2str(this.cost_opt), '.']);
                     return;
                 else
                     this.T_alg = toc(this.T_alg);

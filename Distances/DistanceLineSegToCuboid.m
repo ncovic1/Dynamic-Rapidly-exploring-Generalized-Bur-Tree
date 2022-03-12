@@ -28,6 +28,7 @@ function [collision, d_c, plane] = DistanceLineSegToCuboid(A, B, obstacle)
         elseif I == 3 || I == 6
             P1 = [AB(1:2,ind); obstacle(I)];
         end
+        plane = [P1; P2-P1];
         
         if M == 1 && ind == 1   % Projection of A exists, but projection of B does not exist
             CheckEdges(B, ind);
@@ -36,9 +37,7 @@ function [collision, d_c, plane] = DistanceLineSegToCuboid(A, B, obstacle)
         end
     end
     
-    if ~collision
-        plane = [P1; P2-P1];
-    else
+    if collision
         d_c = 0;
     end
     
@@ -139,25 +138,25 @@ function [collision, d_c, plane] = DistanceLineSegToCuboid(A, B, obstacle)
         if A(1) < obstacle(1) && B(1) < obstacle(1)
             if A(2) < obstacle(2) && B(2) < obstacle(2)
                 if A(3) < obstacle(3) && B(3) < obstacle(3) % < x_min, < y_min, < z_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToPoint(A, B, obstacle([1,2,3]));
+                    [collision, d_c, plane] = DistanceLineSegToPoint(A, B, obstacle([1,2,3]));
                 elseif A(3) > obstacle(6) && B(3) > obstacle(6) % < x_min, < y_min, > z_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToPoint(A, B, obstacle([1,2,6]));
+                    [collision, d_c, plane] = DistanceLineSegToPoint(A, B, obstacle([1,2,6]));
                 else    % < x_min, < y_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,3]), obstacle([1,2,6]));                    
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,3]), obstacle([1,2,6]));                    
                 end
             elseif A(2) > obstacle(5) && B(2) > obstacle(5)
                 if A(3) < obstacle(3) && B(3) < obstacle(3) % < x_min, > y_max, < z_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToPoint(A, B, obstacle([1,5,3]));                        
+                    [collision, d_c, plane] = DistanceLineSegToPoint(A, B, obstacle([1,5,3]));                        
                 elseif A(3) > obstacle(6) && B(3) > obstacle(6) % < x_min, > y_max, > z_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToPoint(A, B, obstacle([1,5,6]));
+                    [collision, d_c, plane] = DistanceLineSegToPoint(A, B, obstacle([1,5,6]));
                 else    % < x_min, > y_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([1,5,3]), obstacle([1,5,6]));                     
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([1,5,3]), obstacle([1,5,6]));                     
                 end                    
             else
                 if A(3) < obstacle(3) && B(3) < obstacle(3) % < x_min, < z_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,3]), obstacle([1,5,3]));
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,3]), obstacle([1,5,3]));
                 elseif A(3) > obstacle(6) && B(3) > obstacle(6) % < x_min, > z_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,6]), obstacle([1,5,6]));
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,6]), obstacle([1,5,6]));
                 else    % < x_min
                     DistanceToMoreLineSegments([obstacle([1,2,3]), obstacle([1,5,3]), obstacle([1,5,3]), obstacle([1,5,6]), ...
                         obstacle([1,5,6]), obstacle([1,2,6]), obstacle([1,2,6]), obstacle([1,2,3])]);
@@ -167,25 +166,25 @@ function [collision, d_c, plane] = DistanceLineSegToCuboid(A, B, obstacle)
         elseif A(1) > obstacle(4) && B(1) > obstacle(4)
             if A(2) < obstacle(2) && B(2) < obstacle(2)
                 if A(3) < obstacle(3) && B(3) < obstacle(3) % > x_max, < y_min, < z_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToPoint(A, B, obstacle([4,2,3]));
+                    [collision, d_c, plane] = DistanceLineSegToPoint(A, B, obstacle([4,2,3]));
                 elseif A(3) > obstacle(6) && B(3) > obstacle(6) % > x_max, < y_min, > z_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToPoint(A, B, obstacle([4,2,6]));                            
+                    [collision, d_c, plane] = DistanceLineSegToPoint(A, B, obstacle([4,2,6]));                            
                 else    % > x_max, < y_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([4,2,3]), obstacle([4,2,6]));                    
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([4,2,3]), obstacle([4,2,6]));                    
                 end
             elseif A(2) > obstacle(5) && B(2) > obstacle(5)
                 if A(3) < obstacle(3) && B(3) < obstacle(3) % > x_max, > y_max, < z_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToPoint(A, B, obstacle([4,5,3]));
+                    [collision, d_c, plane] = DistanceLineSegToPoint(A, B, obstacle([4,5,3]));
                 elseif A(3) > obstacle(6) && B(3) > obstacle(6) % > x_max, > y_max, > z_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToPoint(A, B, obstacle([4,5,6]));
+                    [collision, d_c, plane] = DistanceLineSegToPoint(A, B, obstacle([4,5,6]));
                 else    % > x_max, > y_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([4,5,3]), obstacle([4,5,6]));                     
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([4,5,3]), obstacle([4,5,6]));                     
                 end                    
             else
                 if A(3) < obstacle(3) && B(3) < obstacle(3) % > x_max, < z_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([4,2,3]), obstacle([4,5,3]));
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([4,2,3]), obstacle([4,5,3]));
                 elseif A(3) > obstacle(6) && B(3) > obstacle(6) % > x_max, > z_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([4,2,6]), obstacle([4,5,6]));
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([4,2,6]), obstacle([4,5,6]));
                 else    % > x_max
                     DistanceToMoreLineSegments([obstacle([4,2,3]), obstacle([4,5,3]), obstacle([4,5,3]), obstacle([4,5,6]), ...
                         obstacle([4,5,6]), obstacle([4,2,6]), obstacle([4,2,6]), obstacle([4,2,3])]);
@@ -195,18 +194,18 @@ function [collision, d_c, plane] = DistanceLineSegToCuboid(A, B, obstacle)
         else
             if A(2) < obstacle(2) && B(2) < obstacle(2)
                 if A(3) < obstacle(3) && B(3) < obstacle(3) % < y_min, < z_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,3]), obstacle([4,2,3])); 
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,3]), obstacle([4,2,3])); 
                 elseif A(3) > obstacle(6) && B(3) > obstacle(6) % < y_min, > z_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,6]), obstacle([4,2,6])); 
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([1,2,6]), obstacle([4,2,6])); 
                 else    % < y_min
                     DistanceToMoreLineSegments([obstacle([1,2,3]), obstacle([4,2,3]), obstacle([4,2,3]), obstacle([4,2,6]), ...
                         obstacle([4,2,6]), obstacle([1,2,6]), obstacle([1,2,6]), obstacle([1,2,3])]);                        
                 end
             elseif A(2) > obstacle(5) && B(2) > obstacle(5)
                 if A(3) < obstacle(3) && B(3) < obstacle(3) % > y_max, < z_min
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([1,5,3]), obstacle([4,5,3]));                        
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([1,5,3]), obstacle([4,5,3]));                        
                 elseif A(3) > obstacle(6) && B(3) > obstacle(6) % > y_max, > z_max
-                    [collision, d_c, P1, P2] = DistanceLineSegToLineSeg(A, B, obstacle([1,5,6]), obstacle([4,5,6]));                             
+                    [collision, d_c, plane] = DistanceLineSegToLineSeg(A, B, obstacle([1,5,6]), obstacle([4,5,6]));                             
                 else    % > y_max
                     DistanceToMoreLineSegments([obstacle([1,5,3]), obstacle([4,5,3]), obstacle([4,5,3]), obstacle([4,5,6]), ...
                         obstacle([4,5,6]), obstacle([1,5,6]), obstacle([1,5,6]), obstacle([1,5,3])]);  
@@ -241,14 +240,13 @@ function [collision, d_c, plane] = DistanceLineSegToCuboid(A, B, obstacle)
 
     function DistanceToMoreLineSegments(line_segments)        
         for k = 1:2:size(line_segments,2)
-            [collision, d_c_temp, D_temp, S_temp] = DistanceLineSegToLineSeg(A, B, line_segments(:,k), line_segments(:,k+1));
+            [collision, d_c_temp, plane_temp] = DistanceLineSegToLineSeg(A, B, line_segments(:,k), line_segments(:,k+1));
             if collision
                 return;
             end
             if d_c_temp < d_c
                 d_c = d_c_temp;
-                P1 = D_temp;
-                P2 = S_temp;
+                plane = plane_temp;
             end
         end
     end
