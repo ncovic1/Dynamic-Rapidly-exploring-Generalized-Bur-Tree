@@ -63,8 +63,9 @@ function collision = CollisionLineSegToSide(A, B, obstacle, k, radius)
     end
     
     function DLSTLS(C, D)
-        [~, distance, ~] = DistanceLineSegToLineSeg(A, B, ... 
+        [~, distance_temp, ~] = DistanceLineSegToLineSeg(A, B, ... 
             [C(1:kk-1); obstacle(k); C(kk:end)], [D(1:kk-1); obstacle(k); D(kk:end)]);
+        distance = min([distance, distance_temp]);
         if distance > radius
             collision = false;
         else
