@@ -129,7 +129,7 @@ methods
                 P1 = planes(1:3,k,j);
                 P21 = planes(4:6,k,j);
                 distance(k,j) = min(abs(P21'*(xyz(:,k) - P1)) / norm(P21), 
-                                    abs(P21'*(xyz(:,k+1) - P1)) / norm(P21));
+                                    abs(P21'*(xyz(:,k+1) - P1)) / norm(P21)) - robot.radii(k);
             end
         end
         d_c = min(min(distance));
