@@ -128,9 +128,8 @@ methods
                 % A = xyz(:,k); B = xyz(:,k+1);
                 P1 = planes(1:3,k,j);
                 P21 = planes(4:6,k,j);
-                lambda_A = (P21'*xyz(:,k) - P21'*P1)/norm(P21);
-                lambda_B = (P21'*xyz(:,k+1) - P21'*P1)/norm(P21); 
-                distance(k,j) = min(lambda_A, lambda_B);
+                distance(k,j) = min(abs(P21'*(xyz(:,k) - P1)) / norm(P21), 
+                                    abs(P21'*(xyz(:,k+1) - P1)) / norm(P21));
             end
         end
         d_c = min(min(distance));
