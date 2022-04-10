@@ -1,6 +1,6 @@
 classdef RGBMT_star < RGBT
 properties
-    N_nodes = [1,1];        % Total number of nodes in all trees
+    N_nodes = [1, 1];       % Total number of nodes in all trees
     cost_opt = inf;         % The cost of the final path
     costs = [];             % Best cost through iterations
     return_WPF = false;     % Whether to return When Path is Found (default: false)
@@ -39,91 +39,105 @@ methods
         
         while true            
             q_rand = this.GetRandomNode(this.N_nodes);
-            [d_c, planes] = GetDistance(q_rand);   
+            [d_c, planes] = GetDistance(q_rand);
             
-            %% Adding a new tree to 'tree'
-            tree.nodes{TN_new} = q_rand;
-            tree.pointers{TN_new} = {0};
-            tree.distances{TN_new} = d_c;
-            tree.planes{TN_new} = {planes};
-            tree.costs{TN_new} = 0;
-            trees_reached_p = zeros(1,TN_new-1);  % Pointers to reached nodes in other trees
-            trees_reached = [];               % List of reached trees
-            trees_exist = [];                 % List of trees for which a new tree is extended to
-            
-            %% Considering all previous trees
-            for TN = 1:TN_new-1     
-                % If the connection with q_near is not possible, attempt to connect with parent(q_near), etc.
-                [q_near, q_near_p] = GetNearestNode(tree.nodes{TN}, q_rand);                
-                while true      
-                    [reached, q_new] = this.ConnectNodes(TN_new, 1, q_near);    % q_rand to q_near
-                    q_parent_p = tree.pointers{TN}{q_near_p}(1);
-                    if reached || q_parent_p == 0
-                        break;
-                    else
-                        q_near = tree.nodes{TN}(:,q_parent_p);
-                        q_near_p = q_parent_p;
-                    end
-                end              
-                
-                %% Whether currently considering tree (TN_new-th tree) is reached
-                cost = this.GetCost(q_new, q_rand);
-                if reached      % If reached, q_new == q_near
-                    UpgradeTree(TN_new, 1, q_new, tree.distances{TN}(q_near_p), tree.planes{TN}{q_near_p}, cost);
-                    trees_reached_p(TN) = q_near_p;
-                    trees_exist = [trees_exist, TN];
-                    trees_reached = [trees_reached, TN];
-                elseif cost >= this.eps     % Edge shorter than 'eps' is not considered
-                    UpgradeTree(TN_new, 1, q_new, NaN, NaN, cost);
-                    trees_exist = [trees_exist, TN];
+            %disp([num2str(sum(this.N_nodes) - (this.N_nodes(1) + this.N_nodes(2))), ' ', num2str((this.N_nodes(1) + this.N_nodes(2)))]);
+            if sum(this.N_nodes) > 2 * (this.N_nodes(1) + this.N_nodes(2))  % If local trees contain more states than main trees
+                %disp('Standard RGBT extension ............ ');
+                [~, TN] = min(this.N_nodes(1:2));
+                [q_near, q_near_p] = GetNearestNode(tree.nodes{TN}, q_rand);
+                [~, q_new] = this.ConnectNodes(TN, q_near_p, q_rand);    % q_near to q_rand
+                if ~prod(q_new == q_near)
+                    cost = tree.costs{TN}(q_near_p) + this.GetCost(q_near, q_new);
+                    q_new_p = UpgradeTree(TN, q_near_p, q_new, NaN, NaN, cost);
+                    this.OptimizeEdge(TN, q_new_p, TN, q_near_p);
                 end
-            end   
-            
-            %% Find the optimal edge towards each reached tree
-            if ~isempty(trees_reached)
-                %% The connection of q_rand with both main trees exists
-                TN0 = trees_reached(1);  % Considering the first reached tree
-                if length(trees_reached) > 1 && prod(trees_reached(1:2) == [1,2])   % Both main trees are reached
-                    if rand > this.N_nodes(2)/(this.N_nodes(1)+this.N_nodes(2))
-                        TN0 = trees_reached(2);     % q_rand will be joined to the second main tree
+            else
+                %% Adding a new tree to 'tree'
+                %disp('Adding a new local tree');
+                tree.nodes{TN_new} = q_rand;
+                tree.pointers{TN_new} = {0};
+                tree.distances{TN_new} = d_c;
+                tree.planes{TN_new} = {planes};
+                tree.costs{TN_new} = 0;
+                trees_reached_p = zeros(1,TN_new-1);  % Pointers to reached nodes in other trees
+                trees_reached = [];               % List of reached trees
+                trees_exist = [];                 % List of trees for which a new tree is extended to
+
+                %% Considering all previous trees
+                for TN = 1:TN_new-1     
+                    % If the connection with q_near is not possible, attempt to connect with parent(q_near), etc.
+                    [q_near, q_near_p] = GetNearestNode(tree.nodes{TN}, q_rand);                
+                    while true      
+                        [reached, q_new] = this.ConnectNodes(TN_new, 1, q_near);    % q_rand to q_near
+                        q_parent_p = tree.pointers{TN}{q_near_p}(1);
+                        if reached || q_parent_p == 0
+                            break;
+                        else
+                            q_near = tree.nodes{TN}(:,q_parent_p);
+                            q_near_p = q_parent_p;
+                        end
+                    end              
+
+                    %% Whether currently considering tree (TN_new-th tree) is reached
+                    cost = this.GetCost(q_new, q_rand);
+                    if reached      % If reached, q_new == q_near
+                        UpgradeTree(TN_new, 1, q_new, tree.distances{TN}(q_near_p), tree.planes{TN}{q_near_p}, cost);
+                        trees_reached_p(TN) = q_near_p;
+                        trees_exist = [trees_exist, TN];
+                        trees_reached = [trees_reached, TN];
+                    elseif cost >= this.eps     % Edge shorter than 'eps' is not considered
+                        UpgradeTree(TN_new, 1, q_new, NaN, NaN, cost);
+                        trees_exist = [trees_exist, TN];
                     end
-                end
-                
-                %% Considering all edges from the new tree
-                q_rand_p = this.OptimizeEdge(TN_new, 1, TN0, trees_reached_p(TN0)); % From q_rand to tree TN0
-                k = 1;  % Index of the node from the new tree TN_new
-                trees_connected = [];
-                for TN = trees_exist
-                    k = k+1;
-                    if TN == TN0  % It was considered previously, so just skip now
-                        continue;
-                    end
-                    
-                    %% Unification of tree TN with TN0. Main trees are never unified mutually
-                    q_new_p = this.OptimizeEdge(TN_new, k, TN0, q_rand_p);  % From k-th reached node to tree TN0  
-                    if TN > 2 && any(TN == trees_reached)    
-                        this.UnifyTrees(TN, trees_reached_p(TN), TN0, q_new_p);
-                        trees_connected = [trees_connected, TN];
-                        
+                end   
+
+                %% Find the optimal edge towards each reached tree
+                if ~isempty(trees_reached)
                     %% The connection of q_rand with both main trees exists
-                    elseif TN < 3 && length(trees_reached) > 1 && prod(trees_reached(1:2) == [1,2])
-                        cost = tree.costs{TN0}(q_new_p) + tree.costs{TN}(trees_reached_p(TN));
-                        if cost < this.cost_opt     % The optimal connection between main trees is stored
-                            this.cost_opt = cost;   % disp(cost);
-                            q_con1_p = q_new_p;             % Pointer to a node that is connecting the first main tree with the second one 
-                            q_con2_p = trees_reached_p(TN);     % Pointer to a node that is connecting the second main tree with the first one
-                            TN_main = TN0;              	% Index of the considered main tree when the connection of two main trees occured 
+                    TN0 = trees_reached(1);  % Considering the first reached tree
+                    if length(trees_reached) > 1 && prod(trees_reached(1:2) == [1,2])   % Both main trees are reached
+                        if rand > this.N_nodes(2)/(this.N_nodes(1)+this.N_nodes(2))
+                            TN0 = trees_reached(2);     % q_rand will be joined to the second main tree
                         end
                     end
+
+                    %% Considering all edges from the new tree
+                    q_rand_p = this.OptimizeEdge(TN_new, 1, TN0, trees_reached_p(TN0)); % From q_rand to tree TN0
+                    k = 1;  % Index of the node from the new tree TN_new
+                    trees_connected = [];
+                    for TN = trees_exist
+                        k = k+1;
+                        if TN == TN0  % It was considered previously, so just skip now
+                            continue;
+                        end
+
+                        %% Unification of tree TN with TN0. Main trees are never unified mutually
+                        q_new_p = this.OptimizeEdge(TN_new, k, TN0, q_rand_p);  % From k-th reached node to tree TN0  
+                        if TN > 2 && any(TN == trees_reached)    
+                            this.UnifyTrees(TN, trees_reached_p(TN), TN0, q_new_p);
+                            trees_connected = [trees_connected, TN];
+
+                        %% The connection of q_rand with both main trees exists
+                        elseif TN < 3 && length(trees_reached) > 1 && prod(trees_reached(1:2) == [1,2])
+                            cost = tree.costs{TN0}(q_new_p) + tree.costs{TN}(trees_reached_p(TN));
+                            if cost < this.cost_opt     % The optimal connection between main trees is stored
+                                this.cost_opt = cost;   % disp(cost);
+                                q_con1_p = q_new_p;             % Pointer to a node that is connecting the first main tree with the second one 
+                                q_con2_p = trees_reached_p(TN);     % Pointer to a node that is connecting the second main tree with the first one
+                                TN_main = TN0;              	% Index of the considered main tree when the connection of two main trees occured 
+                            end
+                        end
+                    end
+
+                    %% Deleting trees that have been connected
+                    trees_connected = [trees_connected, TN_new];
+                    this.DeleteTrees(trees_connected);
+                    TN_new = TN_new - length(trees_connected) + 1;
+
+                else    % If there are no reached trees, then the new tree is added to 'tree'
+                    TN_new = TN_new + 1;
                 end
-                
-                %% Deleting trees that have been connected
-                trees_connected = [trees_connected, TN_new];
-                this.DeleteTrees(trees_connected);
-                TN_new = TN_new - length(trees_connected) + 1;
-            
-            else    % If there are no reached trees, then the new tree is added to 'tree'
-                TN_new = TN_new + 1;
             end
             
             this.N_nodes = 0;
@@ -160,24 +174,22 @@ methods
         global robot tree;
         
         while true
-            if length(tree.nodes) > 2   % Gaussian distribution
-                [N_main, TN] = min(N_nodes(1:2));
-                N_local = sum(N_nodes(3:end));
-                if N_local > N_main
-                    q_rand = normrnd(tree.nodes{TN}(:,1), (robot.range(:,2)-robot.range(:,1))*N_main/(6*N_local));
-                    for i = 1:robot.N_DOF
-                        if q_rand(i) < robot.range(i,1)
-                            q_rand(i) = robot.range(i,1);
-                        elseif q_rand(i) > robot.range(i,2)
-                            q_rand(i) = robot.range(i,2);
-                        end
-                    end
-                else
-                    q_rand = (robot.range(:,2)-robot.range(:,1)).*rand(robot.N_DOF,1) + robot.range(:,1);  % Uniform distribution
-                end
-            else
-                q_rand = (robot.range(:,2)-robot.range(:,1)).*rand(robot.N_DOF,1) + robot.range(:,1);  % Uniform distribution
-            end
+            q_rand = (robot.range(:,2)-robot.range(:,1)).*rand(robot.N_DOF,1) + robot.range(:,1);  % Uniform distribution
+            
+%             if length(tree.nodes) > 2   % Gaussian distribution
+%                 [N_main, TN] = min(N_nodes(1:2));
+%                 N_local = sum(N_nodes(3:end));
+%                 if N_local > N_main
+%                     q_rand = normrnd(tree.nodes{TN}(:,1), (robot.range(:,2)-robot.range(:,1))*N_main/(6*N_local));
+%                     for i = 1:robot.N_DOF
+%                         if q_rand(i) < robot.range(i,1)
+%                             q_rand(i) = robot.range(i,1);
+%                         elseif q_rand(i) > robot.range(i,2)
+%                             q_rand(i) = robot.range(i,2);
+%                         end
+%                     end
+%                 end
+%             end
             collision = CheckCollision(q_rand);                
             if ~collision   % If q_rand is collision-free, it is accepted
                 return;
