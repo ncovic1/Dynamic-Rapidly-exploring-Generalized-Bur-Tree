@@ -340,7 +340,7 @@ methods
         end
         [d_best, index] = min(d_i);  % Minimal distance-to-goal
         if d_best == 0  % q_goal is cosidered
-            d_best = 0.00001;  % Added only to avoid 0/0 when d_i(i)==0
+            d_best = 1e-6;  % Added only to avoid 0/0 when d_i(i)==0
             d_i(index) = d_best;
         end
         p_dist = d_best./d_i;
@@ -372,7 +372,7 @@ methods
         
         if nargin == 3  % If weights of previous and new node are close, previous node remains
             if horizon.index_next ~= index_prev && index_prev <= length(horizon.weights)
-                if D_min == 0   % If q_goal has been reached, hysteresis is set to zero
+                if D_min == 1e-6   % If q_goal has been reached, hysteresis is set to zero
                     hysteresis = 0;
                 end
                 if abs(horizon.weights(horizon.index_next) - horizon.weights(index_prev)) < hysteresis
