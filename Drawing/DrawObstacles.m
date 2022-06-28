@@ -1,4 +1,4 @@
-function [graphics_WS, graphics_CS] = DrawObstacles(d_theta)
+function [graphics_WS, graphics_CS] = DrawObstacles(d_theta, MarkerSize)
     global robot obstacles;
     graphics_WS = {};
     graphics_CS = {};
@@ -23,14 +23,14 @@ function [graphics_WS, graphics_CS] = DrawObstacles(d_theta)
         end
         grid on; xlabel('$x$'); ylabel('$y$'); axis equal; axis(sum(L)*[-1, 1, -1, 1]);
 
-        if robot.N_DOF == 2 && nargin == 1
+        if robot.N_DOF == 2 && nargin == 2
             i = 1;
             subplot(1,2,2); 
             for theta1 = -pi:d_theta:pi
                 for theta2 = -pi:d_theta:pi
                     collision = CheckCollision([theta1; theta2]);
                     if collision
-                        graphics_CS{i} = plot(theta1, theta2,'black','Marker','.','MarkerSize',3); hold on; %drawnow; 
+                        graphics_CS{i} = plot(theta1, theta2,'black','Marker','.','MarkerSize',MarkerSize); hold on; %drawnow; 
                         i = i + 1;
                     end
                 end

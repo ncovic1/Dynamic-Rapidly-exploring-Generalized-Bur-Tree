@@ -9,12 +9,12 @@ function graphics = DrawRobot(q, color, transp, LineWidth, MarkerSize)
     if robot.dim == 2
         k = 1;
         subplot(1,2,1);
-        L = sum(robot.DH_table(:,1:2),2);
         [xyz, ~] = DirectKinematics(robot, q);
         for j = 1:robot.N_links      
             graphics{k} = plot([xyz(1,j),xyz(1,j+1)], [xyz(2,j),xyz(2,j+1)], 'Color',color,'LineWidth',LineWidth); hold on; k = k+1; %drawnow;
             graphics{k} = plot(xyz(1,j),xyz(2,j),'Color','k','Marker','.','MarkerSize',MarkerSize); hold on; k = k+1;
         end
+        L = sum(robot.DH_table(:,1:2),2);
         grid on; xlabel('$x$'); ylabel('$y$'); axis equal; axis(sum(L)*[-1, 1, -1, 1]);
         
         subplot(1,2,2);

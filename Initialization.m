@@ -177,6 +177,25 @@ function InitObs_2124()
     
 end
 
+function InitObs_2125()
+    obstacles.loc = [];
+    dim= [0.3, 0.3, 0];
+    trans= [0.65, 0.7, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.3, 0.3, 0];
+    trans= [-0.65, 0.7, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];      
+    dim= [0.1, 0.1, 0];
+    trans= [0.65, 1.3, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    dim= [0.1, 0.1, 0];
+    trans= [-0.65, 1.3, 0];
+    obstacles.loc = [obstacles.loc, [trans-dim/2, trans+dim/2]'];
+    
+    robot.q_init = [1.8; 1.25]; 
+    robot.q_goal = [pi-1.8; -1.25];
+end
+
 function InitObs_2221()
     obstacles.loc = [-1.2 0.5 0 -0.8 2 0; -1.2 -2 0 -0.8 -0.5 0; -2.5 1.5 0 -1.2 2 0; 
         -2.5 -2 0 -1.2 -1.5 0; -4 -2 0 -2.5 2 0]';   % [x_min y_min z_min x_max y_max z_max]

@@ -3,7 +3,7 @@ properties
     eps = 0.1;              % Step in C-space used by RRT-based algorithms
     N_max = 10000;          % Max. number of considered nodes
     N_spines = 7;           % Number of bur spines
-    d_crit = 0.01;          % Critical distance in W-space when RBT becomes RRT
+    d_crit = 0.03;          % Critical distance in W-space when RBT becomes RRT
     delta = pi;             % Radius of hypersphere from q to q_e
     path = [];              % Traversed path (sequence of nodes from q_init to q_goal)
     N_iter = 0;             % Iteration counter

@@ -25,17 +25,12 @@ methods
     end
     
     function this = Run(this)
-        global robot horizon obstacles graphics;
+        global robot horizon obstacles graphics writerObj OBS;
         graphics = {{line(0,0)}, {line(0,0)}, {line(0,0)}, {line(0,0)}, {line(0,0)}, line(0,0), {line(0,0)}, {line(0,0)}, line(0,0)};
         
-%         global OBS name;
 %         for nn = 1:size(obstacles.loc,2)
 %             OBS(:,:,nn) = obstacles.loc(:,nn);
 %         end
-%         writerObj = VideoWriter(['Video', name],'MPEG-4'); % Name it.
-%         writerObj.FrameRate = 10; % How many frames per second.
-%         writerObj.Quality = 100;  % Quality of the video
-%         open(writerObj);
                 
         horizon.N_h0 = 10;              % Initial horizon size
         horizon.N_h = horizon.N_h0;     % Horizon size that may change during the algorithm execution
@@ -54,7 +49,7 @@ methods
         k = 1;              % Index of next node from predefined path
         this.path = horizon.q_curr;
         
-        % Getting the inital path
+        % Obtaining the inital path
         rgbt = RGBT();
         rgbt = rgbt.Run();
         
@@ -116,24 +111,18 @@ methods
                 if this.collision
                     this.T_alg = toc(this.T_alg);
                     this.Draw(q_p, rgbt.path);
-                    disp('Collision !!!');
-                    
+                    disp('Collision !!!');                    
 %                     pause(0.000000025);
-%                     frame = getframe(gcf);  % 'gcf' can handle if you zoom in to take a movie.
-%                     writeVideo(writerObj, frame);
-%                     close(writerObj);
+%                     writeVideo(writerObj, getframe(gcf));
                     return;
                 end
                 
                 if horizon.q_curr == robot.q_goal
                     this.T_alg = toc(this.T_alg);
                     this.Draw(q_p, rgbt.path); 
-                    disp('Goal configuration has been successfully reached!');
-                    
+                    disp('Goal configuration has been successfully reached!');                    
 %                     pause(0.000000025);
-%                     frame = getframe(gcf);    % 'gcf' can handle if you zoom in to take a movie.
-%                     writeVideo(writerObj, frame);
-%                     close(writerObj);
+%                     writeVideo(writerObj, getframe(gcf));
                     return;
                 end
                 
@@ -196,8 +185,7 @@ methods
                 this.Draw(q_p, rgbt.path); 
                 
 %                 pause(0.000000025);
-%                 frame = getframe(gcf);  % 'gcf' can handle if you zoom in to take a movie.
-%                 writeVideo(writerObj, frame);
+%                 writeVideo(writerObj, getframe(gcf));
 
             end            
         end
@@ -340,7 +328,7 @@ methods
         end
         [d_best, index] = min(d_i);  % Minimal distance-to-goal
         if d_best == 0  % q_goal is cosidered
-            d_best = 1e-6;  % Added only to avoid 0/0 when d_i(i)==0
+            d_best = 0.00001;  % Added only to avoid 0/0 when d_i(i)==0
             d_i(index) = d_best;
         end
         p_dist = d_best./d_i;
@@ -372,7 +360,7 @@ methods
         
         if nargin == 3  % If weights of previous and new node are close, previous node remains
             if horizon.index_next ~= index_prev && index_prev <= length(horizon.weights)
-                if D_min == 1e-6   % If q_goal has been reached, hysteresis is set to zero
+                if D_min == 0   % If q_goal has been reached, hysteresis is set to zero
                     hysteresis = 0;
                 end
                 if abs(horizon.weights(horizon.index_next) - horizon.weights(index_prev)) < hysteresis

@@ -1,7 +1,7 @@
 function [] = DrawDetails(path, eps, animate)
     global robot tree;
     path_mod = [];
-    k = 1;
+    kk = 1;
     for i = 1:size(path,2)-1
         q1 = path(:,i);
         q2 = path(:,i+1);
@@ -9,16 +9,16 @@ function [] = DrawDetails(path, eps, animate)
         D = norm(q2-q1);
         while true
             if D > 0
-                path_mod(:,k) = q1 + j*eps*(q2-q1)/D;
+                path_mod(:,kk) = q1 + j*eps*(q2-q1)/D;
             else
-                path_mod(:,k) = q1;
+                path_mod(:,kk) = q1;
             end
-            if norm(q2-path_mod(:,k)) <= 1.5*eps
-                path_mod(:,k+1) = q2;
-                k = k+1;
+            if norm(q2-path_mod(:,kk)) <= 1.5*eps
+                path_mod(:,kk+1) = q2;
+                kk = kk+1;
                 break;
             end
-            k = k+1;
+            kk = kk+1;
             j = j+1;
         end        
     end
@@ -53,6 +53,7 @@ function [] = DrawDetails(path, eps, animate)
     end
     
     if robot.dim == 2
+        subplot(1,2,2);
         for i = 1:size(path_mod,2)
             if i < size(path_mod,2) 
                 q1 = path_mod(:,i);
