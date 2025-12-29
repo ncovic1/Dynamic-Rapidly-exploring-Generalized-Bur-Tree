@@ -156,16 +156,16 @@ methods
             end
             
             %%%%%%%%%%%% Drawing %%%%%%%%%%%%%%%
-            if sum(this.N_nodes) > N_nodes_prev
-                set(gca,'FontSize',14);
-                title(['Num. of states: ', num2str(sum(this.N_nodes)), '~~~~Cost: ', num2str(this.cost_opt)]);
-                if this.cost_opt < inf && cost_update
-                    this.path = ComputePath(TN_main, q_con_p);
-                    this.Draw_WS();
-                end                
-                pause(0.000000025);
-                writeVideo(writerObj, getframe(gcf));
-            end
+            % if sum(this.N_nodes) > N_nodes_prev
+            %     set(gca,'FontSize',14);
+            %     title(['Num. of states: ', num2str(sum(this.N_nodes)), '~~~~Cost: ', num2str(this.cost_opt)]);
+            %     if this.cost_opt < inf && cost_update
+            %         this.path = ComputePath(TN_main, q_con_p);
+            %         this.Draw_WS();
+            %     end                
+            %     pause(0.000000025);
+            %     writeVideo(writerObj, getframe(gcf));
+            % end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
             if this.return_WPF && this.cost_opt < inf || sum(this.N_nodes) >= this.N_max || toc(this.T_alg) > this.T_max
