@@ -1,5 +1,5 @@
 function q_new_p = UpgradeTree(TN, q_parent_p, q_new, d_c, planes, cost)
-    % q_parent_p - pointer at q_new parent
+    % q_parent_p - pointer at q_new parent in tree TN
     % q_new - new node added to tree
     % q_new_p - pointer at q_new in the new tree
     

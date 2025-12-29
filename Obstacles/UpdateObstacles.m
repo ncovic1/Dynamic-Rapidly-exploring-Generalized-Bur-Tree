@@ -143,21 +143,66 @@ function Obstacles_2122()
     end
 end
 
+% function Obstacles_2123()
+%     global pp1 pp2;
+% 
+%     R = 1.1;
+%     for ii = 1:size(obs.loc,2)
+%         fi = atan2((obs.loc(2,ii)+0.25)/R, (obs.loc(1,ii)+0.25)/(1.5*R));
+%         obs.loc(1,ii) = 1.5*R*cos(fi + obs.step)-0.25;
+%         obs.loc(2,ii) = R*sin(fi + obs.step)-0.25;
+%         obs.loc(4,ii) = 1.5*R*cos(fi + obs.step)+0.5-0.25;
+%         obs.loc(5,ii) = R*sin(fi + obs.step)+0.5-0.25;
+%     end
+% end
+
 function Obstacles_2123()
-    global pp1 pp2;
-    
-    R = 1.1;
     for ii = 1:size(obs.loc,2)
-        fi = atan2((obs.loc(2,ii)+0.25)/R, (obs.loc(1,ii)+0.25)/(1.5*R));
-        obs.loc(1,ii) = 1.5*R*cos(fi + obs.step)-0.25;
-        obs.loc(2,ii) = R*sin(fi + obs.step)-0.25;
-        obs.loc(4,ii) = 1.5*R*cos(fi + obs.step)+0.5-0.25;
-        obs.loc(5,ii) = R*sin(fi + obs.step)+0.5-0.25;
+        pos = (obs.loc(4:6,ii) + obs.loc(1:3,ii)) / 2;
+        phi = atan2(pos(2), pos(1));
+        vel = [-sin(phi); cos(phi); 0] * obs.max_vel;
+        pos_next = pos + vel * obs.delta_t * obs.decimation;
+        obs.loc(:,ii) = [pos_next-obs.dim/2; pos_next+obs.dim/2];
     end
 end
 
 function Obstacles_2124()
-    
+    Obstacles_2123();
+end
+
+function Obstacles_21210()
+    base_radius = robot.radii(1);
+    robot_max_vel = pi;
+    WS_center = [0, 0, 0]';
+    WS_radius = 2.5;
+    delta_time = obs.delta_t * obs.decimation;
+
+    for ii = 1 : size(obs.loc,2)
+        tol_radius = max(norm(obs.vel(:,ii)) / robot_max_vel, base_radius);
+        pos_ii = (obs.loc(4:6,ii) + obs.loc(1:3,ii)) / 2;
+        pos_next = pos_ii + obs.vel(:,ii) * delta_time;
+        change = true;
+        
+        if pos_next(3) < 0
+            vec_normal = [0, 0, 1]';
+        elseif norm(pos_next - WS_center) > WS_radius
+            vec_normal = [-pos_next(1), -pos_next(2), -(pos_next(3) - WS_center(3))]';
+        elseif norm(pos_next(1:2)) < tol_radius && pos_next(3) < WS_center(3)
+            vec_normal = [pos_next(1), pos_next(2), 0]';
+        elseif norm(pos_next - WS_center) < tol_radius
+            vec_normal = [pos_next(1), pos_next(2), pos_next(3) - WS_center(3)]';
+        else
+            obs.loc(:,ii) = [pos_next-obs.dim/2; pos_next+obs.dim/2];
+            change = false;
+        end
+
+        if change
+            t_param = (pos_next - pos_ii)' * vec_normal / norm(vec_normal)^2;
+            pos_new = 2*pos_next - pos_ii - 2*t_param * vec_normal;
+            obs.loc(:,ii) = [pos_new-obs.dim/2; pos_new+obs.dim/2];
+            obs.vel(:,ii) = (pos_new - pos_next) / delta_time;
+        end
+    end
 end
 
 function Obstacles_2221()

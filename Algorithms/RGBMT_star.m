@@ -1,4 +1,4 @@
-classdef RGBMT_star < RGBT
+classdef RGBMT_star < RGBT_Connect
 properties
     N_nodes = [1, 1];       % Total number of nodes in all trees
     cost_opt = inf;         % The cost of the final path
@@ -122,7 +122,6 @@ methods
                         cost = tree.costs{TN0}(q_new_p);
                         if cost < this.cost_opt     % The optimal connection between main trees is stored
                             this.cost_opt = cost;
-                            disp(['Cost after ', num2str(sum(this.N_nodes)), ' nodes is ', num2str(cost)]);
                             q_con_p = q_new_p; 
                             TN_main = TN0;          % Index of the considered main tree when the connection of two main trees occured 
                             cost_update = true;
@@ -152,19 +151,24 @@ methods
                 this.N_nodes(TN) = size(tree.nodes{TN},2);
             end
             this.costs = [this.costs, this.cost_opt*ones(1,sum(this.N_nodes)-length(this.costs))];
+            if this.cost_opt < inf && cost_update
+                disp(['Cost after ', num2str(sum(this.N_nodes)), ' nodes is ', num2str(cost)]);
+            end
             
             %%%%%%%%%%%% Drawing %%%%%%%%%%%%%%%
-%             if sum(this.N_nodes) > N_nodes_prev
-%                 if this.cost_opt < inf && cost_update
-%                     this.path = ComputePath(TN_main, q_con_p);
-%                     this.Draw_WS();
-%                 end                
-%                 pause(0.000000025);
-%                 writeVideo(writerObj, getframe(gcf));
-%             end
+            % if sum(this.N_nodes) > N_nodes_prev
+            %     set(gca,'FontSize',14);
+            %     title(['Num. of states: ', num2str(sum(this.N_nodes)), '~~~~Cost: ', num2str(this.cost_opt)]);
+            %     if this.cost_opt < inf && cost_update
+            %         this.path = ComputePath(TN_main, q_con_p);
+            %         this.Draw_WS();
+            %     end                
+            %     pause(0.000000025);
+            %     writeVideo(writerObj, getframe(gcf));
+            % end
             %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
             
-            if this.return_WPF && this.cost_opt < inf || sum(this.N_nodes) >= this.N_max
+            if this.return_WPF && this.cost_opt < inf || sum(this.N_nodes) >= this.N_max || toc(this.T_alg) > this.T_max
                 if this.cost_opt < inf     % Both main trees are connected
                     this.path = ComputePath(TN_main, q_con_p);
                     this.T_alg = toc(this.T_alg);
@@ -241,7 +245,7 @@ methods
             % If the distance-to-obstacles is greater/less than d_crit
             if d_c > this.d_crit
                 [q_new, reached] = this.GenerateSpine(q_new, q_e, d_c);     % Generating a generalized spine
-                d_c = this.GetUnderestimation_dc(q_new, planes);
+                d_c = GetDistanceUnderestimation(q_new, planes);
             else
                 [q_new, reached, collision] = this.GenerateEdge(q_new, q_e);     % Generating a spine according to RRT-paradigm
             end
@@ -443,7 +447,7 @@ methods
         global graphics_WS;
                 
         kk = 1;
-        eps = 0.1;
+        eps = 0.15;
         for i = 1:size(this.path,2)-1
             q1 = this.path(:,i);
             q2 = this.path(:,i+1);

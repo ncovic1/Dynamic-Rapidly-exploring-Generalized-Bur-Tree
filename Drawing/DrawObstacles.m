@@ -30,7 +30,7 @@ function [graphics_WS, graphics_CS] = DrawObstacles(d_theta, MarkerSize)
                 for theta2 = -pi:d_theta:pi
                     collision = CheckCollision([theta1; theta2]);
                     if collision
-                        graphics_CS{i} = plot(theta1, theta2,'black','Marker','.','MarkerSize',MarkerSize); hold on; %drawnow; 
+                        graphics_CS{i} = plot(theta1, theta2, 'black','Marker','.','MarkerSize',MarkerSize); hold on; %drawnow; 
                         i = i + 1;
                     end
                 end

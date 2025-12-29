@@ -1,5 +1,7 @@
 function [] = DrawDetails(path, eps, animate)
     global robot tree;
+%     global writerObj;
+    
     path_mod = [];
     kk = 1;
     for i = 1:size(path,2)-1
@@ -52,18 +54,29 @@ function [] = DrawDetails(path, eps, animate)
         end   
     end
     
+    g = {line(0,0)};
     if robot.dim == 2
-        subplot(1,2,2);
         for i = 1:size(path_mod,2)
-            if i < size(path_mod,2) 
-                q1 = path_mod(:,i);
-                q2 = path_mod(:,i+1);
-                plot([q1(1),q2(1)],[q1(2),q2(2)],'Color',[0.7,0.7,0.7],'LineWidth',3); hold on;
+            q1 = path_mod(:,i);
+            if robot.N_DOF == 2
+                subplot(1,2,2);
+                if i < size(path_mod,2)
+                    q2 = path_mod(:,i+1); 
+                    plot([q1(1),q2(1)],[q1(2),q2(2)],'Color',[0.7,0.7,0.7],'LineWidth',3); hold on;
+                end
             end
-            DrawRobot(q1, [0.7,0.7,0.7], 0.2, 1, 1); 
+%             DrawRobot(q1, [0.7,0.7,0.7], 0.2, 1, 1);
+            for kk = 1:length(g)
+                delete(g{kk});
+            end
+            g = DrawRobot(q1, 'red', 0.3, 3, 20);
+%             set(gca,'FontSize',14);
+%             title('Num. of states: 2500~~~~Cost: 11.3905');            
+%             pause(0.000000025);
+%             writeVideo(writerObj, getframe(gcf));
             if animate
                 drawnow; % pause(0.1);
-            end
+            end             
         end
     else
         for i = 1:size(path_mod,2)

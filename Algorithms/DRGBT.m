@@ -1,4 +1,4 @@
-classdef DRGBT < RGBT
+classdef DRGBT < RGBT_Connect
 properties
     collision = 0;          % Whether the collision occured
     w_min = 0.5;            % Treshold 1 for the replanning assessment
@@ -50,23 +50,23 @@ methods
         this.path = horizon.q_curr;
         
         % Obtaining the inital path
-        rgbt = RGBT();
-        rgbt = rgbt.Run();
+        alg = RGBT_Connect();
+        alg = alg.Run();
         
         while true
             T_iter_temp = tic;
             replanning = false;   % Whether path replanning is required
             k = k + horizon.index_next;     
-            if k+horizon.N_h-1 <= size(rgbt.path,2)
-                horizon.nodes = rgbt.path(:,k:k+horizon.N_h-1);
-            elseif k <= size(rgbt.path,2)
-                horizon.nodes = rgbt.path(:,k:end);
+            if k+horizon.N_h-1 <= size(alg.path,2)
+                horizon.nodes = alg.path(:,k:k+horizon.N_h-1);
+            elseif k <= size(alg.path,2)
+                horizon.nodes = alg.path(:,k:end);
             else
-                k = size(rgbt.path,2);
-                if isempty(rgbt.path)
+                k = size(alg.path,2);
+                if isempty(alg.path)
                     horizon.nodes = this.GetRandomNodes(horizon.N_h);  % If initial path was not found, horizon.N_h random nodes are added
                 else
-                    horizon.nodes = rgbt.path(:,end);   % At least q_goal remains in horizon
+                    horizon.nodes = alg.path(:,end);   % At least q_goal remains in horizon
                 end
             end
             
@@ -75,7 +75,7 @@ methods
             horizon.q_next = this.Get_q_next(zeros(1,horizon.N_h));
             index_prev = horizon.index_next;
             
-            if k == size(rgbt.path,2) && ~prod(horizon.q_next == robot.q_goal)
+            if k == size(alg.path,2) && ~prod(horizon.q_next == robot.q_goal)
                 replanning = true;
             end
             
@@ -110,7 +110,7 @@ methods
                 this.collision = CheckCollision(horizon.q_curr);
                 if this.collision
                     this.T_alg = toc(this.T_alg);
-                    this.Draw(q_p, rgbt.path);
+                    this.Draw(q_p, alg.path);
                     disp('Collision !!!');                    
 %                     pause(0.000000025);
 %                     writeVideo(writerObj, getframe(gcf));
@@ -119,7 +119,7 @@ methods
                 
                 if horizon.q_curr == robot.q_goal
                     this.T_alg = toc(this.T_alg);
-                    this.Draw(q_p, rgbt.path); 
+                    this.Draw(q_p, alg.path); 
                     disp('Goal configuration has been successfully reached!');                    
 %                     pause(0.000000025);
 %                     writeVideo(writerObj, getframe(gcf));
@@ -146,14 +146,14 @@ methods
                     T_remain = this.T_s - toc(T_iter_temp) - 0.001;     % Added 1 [ms] for the remaining code lines
                     horizon.index_next = 1;
                     robot.q_init = horizon.q_curr;
-                    A_new = RGBT(this.eps, this.N_max, this.N_spines, this.N_layers, this.d_crit, this.delta, T_remain);
-                    A_new = A_new.Run();
+                    alg_new = RGBT_Connect(this.eps, this.N_max, this.N_spines, this.N_layers, this.d_crit, this.delta, T_remain);
+                    alg_new = alg_new.Run();
 
-                    if ~isempty(A_new.path)  % Update path to the goal
+                    if ~isempty(alg_new.path)  % Update path to the goal
 %                         disp('The path has been replanned.');
                         replanning = false;
                         reached = true;
-                        rgbt.path = A_new.path;
+                        alg.path = alg_new.path;
                         k = 1;
                     else    % New path is not found
 %                         disp('New path is not found.');
@@ -182,7 +182,7 @@ methods
                 
 %                 disp('----------------------------------------------------------------------------------------');
             
-                this.Draw(q_p, rgbt.path); 
+                this.Draw(q_p, alg.path); 
                 
 %                 pause(0.000000025);
 %                 writeVideo(writerObj, getframe(gcf));
@@ -242,12 +242,12 @@ methods
         while i < horizon.N_h
             i = i + 1; 
             [q_new, reached] = this.GenerateSpine(horizon.q_curr, nodes_good(:,i), d_c);
-            d_c_new = this.GetUnderestimation_dc(q_new, planes); 
+            d_c_new = GetDistanceUnderestimation(q_new, planes); 
                  
             if d_c_new < this.d_crit && ~prod(q_new == robot.q_goal)    % Underestimation to obstacle is less than critical
                 nodes_good(:,i) = this.GetRandomNodes(1, q_new, false);    % q_e is added instead of nodes_good(:,i), which is "bad"
                 [q_new, reached] = this.GenerateSpine(horizon.q_curr, nodes_good(:,i), d_c);
-                d_c_new = this.GetUnderestimation_dc(q_new, planes); 
+                d_c_new = GetDistanceUnderestimation(q_new, planes); 
                 horizon.missing_ind(end+1) = i;
             end
             
@@ -256,7 +256,7 @@ methods
                     break;
                 end
                 [q_new, reached] = this.GenerateSpine(q_new, nodes_good(:,i), d_c_new); 
-                d_c_new = this.GetUnderestimation_dc(q_new, planes);
+                d_c_new = GetDistanceUnderestimation(q_new, planes);
             end
             horizon.distances(i) = d_c_new;  
             horizon.nodes_reached(:,i) = q_new; 
